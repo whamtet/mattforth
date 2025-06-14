@@ -1,2 +1,3 @@
 VARIABLE fuck
-3 fuck ! @ .
+STRING ok: you must be joking
+.ok

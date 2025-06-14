@@ -1,5 +1,6 @@
 .section .data
 format:     .asciz "%d\n"
+{}
 
 .section .text
 .global main

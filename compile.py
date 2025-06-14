@@ -1,5 +1,21 @@
 import re
 
+def keep(f, s):
+    return filter(lambda x: x, map(f, s))
+
+def defstr(s):
+    if s.startswith('STRING '):
+        [a, b] = s[7:].split(': ')
+        return f"""
+{a}: .asciz "{b}\\n"
+"""
+
+def pr_str(s):
+    return f"""
+ldr X0, ={s}
+bl printf
+"""
+
 def push_stack(value):
     return f"""
 mov X3, #{value}
@@ -51,7 +67,10 @@ bl      printf
 }
 
 def clean_line(line):
-    if ('VARIABLE' in line):
+    if 'VARIABLE' in line:
+        return ''
+
+    if line.startswith('STRING '):
         return ''
 
     return line.split('\\')[0]
@@ -80,20 +99,27 @@ with open("index.mf", "r") as file_src:
     curr_variable = None
 
     assembly = []
+    lines = src.split('\n')
 
-    for line_src_ in src.split('\n'):
+    for line_src_ in lines:
         line_src = clean_line(line_src_)
         for symbol in re.findall(r"\S+", line_src):
             if symbol in variables:
                 curr_variable = symbol
-            else :
+            elif symbol.startswith('.') and symbol != '.':
+                assembly.append(pr_str(symbol[1:]))
+            else:
                 for step in compile_sym(symbol, curr_variable):
                     assembly.append(step)
 
     # format
     with open("h.template.s") as file_template:
         template = file_template.read()
-        out = template.format('\n'.join(assembly), ''.join(map(bss, variables)))
+        strs = ''.join(keep(defstr, lines))
+        text = '\n'.join(assembly)
+        bss_defs = ''.join(map(bss, variables))
+
+        out = template.format(strs, text, bss_defs)
 
         with open("h.s", "w") as file_out:
             file_out.write(out)
