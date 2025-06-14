@@ -6,27 +6,40 @@ mov X3, #{value}
 str X3, [X19], #8
 """
 
-add = """
+plain_args = {
+"+": """
 ldr X0, [X19, #-8]!
 ldr X1, [X19, #-8]!
 add X0, X0, X1
 str X0, [X19], #8
-"""
-
-print_c = """
+""",
+"-": """
+ldr X0, [X19, #-8]!
+ldr X1, [X19, #-8]!
+sub X0, X0, X1
+str X0, [X19], #8
+""",
+"*": """
+ldr X0, [X19, #-8]!
+ldr X1, [X19, #-8]!
+mul X0, X0, X1
+str X0, [X19], #8
+""",
+".": """
 ldr     X0, =format
 ldr X1, [X19, #-8]!
 bl      printf
 """
+}
 
 def clean_line(line):
     return line.split('\\')[0]
 
+
 def compile_sym(s):
-    if s == '.':
-        return [print_c]
-    if s == '+':
-        return [add]
+    asm = plain_args.get(s)
+    if asm:
+        return [asm] 
 
     return [push_stack(s)]
 
