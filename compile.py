@@ -3,17 +3,19 @@ import re
 def push_stack(value):
     return f"""
 mov X3, #{value}
-str X3, [X19]
-add X19, X19, #64
+str X3, [X19], #8
 """
 
-pop_stack = """
-sub X19, X19, #64
-ldr X1, [X19]
+add = """
+ldr X0, [X19, #-8]!
+ldr X1, [X19, #-8]!
+add X0, X0, X1
+str X0, [X19], #8
 """
 
 print_c = """
-ldr     x0, =format
+ldr     X0, =format
+ldr X1, [X19, #-8]!
 bl      printf
 """
 
@@ -22,7 +24,9 @@ def clean_line(line):
 
 def compile_sym(s):
     if s == '.':
-        return [pop_stack, print_c]
+        return [print_c]
+    if s == '+':
+        return [add]
 
     return [push_stack(s)]
 
