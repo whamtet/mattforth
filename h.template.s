@@ -1,8 +1,12 @@
-.global _start
+.section .data
+format:     .asciz "%d\n"
 
-_start:
+.section .text
+.global main
 
-ldr X4, =stack
+main:
+
+ldr X19, =stack
 
 {}
 
@@ -13,5 +17,3 @@ svc 0
 .bss
     .align 3
 stack: .skip 1048576
-pointer: .skip 8
-print_buffer: .skip 32

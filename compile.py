@@ -3,24 +3,28 @@ import re
 def push_stack(value):
     return f"""
 mov X3, #{value}
-str X3, [X4]
-add X4, X4, #64
+str X3, [X19]
+add X19, X19, #64
 """
 
-save_pointer = """
-ldr X5, =pointer
-str X4, [X5]
+pop_stack = """
+sub X19, X19, #64
+ldr X1, [X19]
 """
 
-load_pointer = """
-ldr X4, =pointer
+print_c = """
+ldr     x0, =format
+bl      printf
 """
 
 def clean_line(line):
     return line.split('\\')[0]
 
 def compile_sym(s):
-    return push_stack(s)
+    if s == '.':
+        return [pop_stack, print_c]
+
+    return [push_stack(s)]
 
 with open("index.mf", "r") as file_src:
 
@@ -29,10 +33,8 @@ with open("index.mf", "r") as file_src:
     for line_src_ in file_src:
         line_src = clean_line(line_src_)
         for symbol in re.findall(r"\S+", line_src):
-            assembly.append(compile_sym(symbol))
-
-    assembly.append(save_pointer)
-    assembly.append(load_pointer)
+            for step in compile_sym(symbol):
+                assembly.append(step)
 
     # format
     with open("h.template.s") as file_template:
