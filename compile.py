@@ -1,4 +1,5 @@
 import re
+from if_compiler import emit_if, emit_else, emit_then
 
 def keep(f, s):
     return filter(lambda x: x, map(f, s))
@@ -82,6 +83,17 @@ def bss(var):
 
 
 def compile_sym(s, curr_variable):
+
+    if symbol.startswith('.') and symbol != '.':
+        return [pr_str(symbol[1:])]
+
+    if symbol == 'IF':
+        return [emit_if()]
+    if symbol == 'ELSE':
+        return [emit_else()]
+    if symbol == 'THEN':
+        return [emit_then()]
+
     asm = plain_args.get(s)
     if asm:
         return [asm] 
