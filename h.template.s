@@ -17,3 +17,4 @@ svc 0
 .bss
     .align 3
 stack: .skip 1048576
+{}

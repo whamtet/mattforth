@@ -35,6 +35,11 @@ bl      printf
 def clean_line(line):
     return line.split('\\')[0]
 
+def bss(var):
+    return f"""
+{var}: .skip 8
+"""
+
 
 def compile_sym(s):
     asm = plain_args.get(s)
@@ -45,18 +50,22 @@ def compile_sym(s):
 
 with open("index.mf", "r") as file_src:
 
+    src = file_src.read()
+
     assembly = []
 
-    for line_src_ in file_src:
+    for line_src_ in src.split('\n'):
         line_src = clean_line(line_src_)
         for symbol in re.findall(r"\S+", line_src):
             for step in compile_sym(symbol):
                 assembly.append(step)
 
+    defs = re.findall(r"VARIABLE (\S+)", src)
+
     # format
     with open("h.template.s") as file_template:
         template = file_template.read()
-        out = template.format('\n'.join(assembly))
+        out = template.format('\n'.join(assembly), ''.join(map(bss, defs)))
 
         with open("h.s", "w") as file_out:
             file_out.write(out)
