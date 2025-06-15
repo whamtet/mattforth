@@ -41,27 +41,27 @@ str X0, [X1]
 def op_maker(s):
     return f"""
 ldr X0, [X19, #-8]!
-ldr X1, [X19, #-8]!
+ldr X1, [X19, #-8]
 {s} X0, X0, X1
-str X0, [X19], #8
+str X0, [X19, #-8]
 """
 
 def comp_maker(s):
     return f"""
 ldr X0, [X19, #-8]!
-ldr X1, [X19, #-8]!
+ldr X1, [X19, #-8]
 cmp X1, X0
 cset X2, {s}
-str X2, [X19], #8
+str X2, [X19, #-8]
 """
 
 def not_maker(s):
     return f"""
-ldr X0, [X19, #-8]!
+ldr X0, [X19, #-8]
 mov X1, #0
 cmp X0, X1
 cset X2, {s}
-str X2, [X19], #8
+str X2, [X19, #-8]
 """
 
 plain_args = {
@@ -81,9 +81,9 @@ bl printf
 mov X8, #63
 mov X0, #0
 ldr X1, [X19, #-8]!
-ldr X2, [X19, #-8]!
+ldr X2, [X19, #-8]
 svc #0
-str X1, [X19], #8
+str X1, [X19, #-8]
 """,
 "dup": """
 ldr X0, [X19, #-8]
@@ -98,6 +98,16 @@ str X0, [X19], #8
 ">=": comp_maker("ge"),
 ">": comp_maker("gt"),
 "!=": comp_maker("ne"),
+"inc": """
+ldr X0, [X19, #-8]
+add X0, X0, #1
+str X0, [X19, #-8]
+""",
+"dec": """
+ldr X0, [X19, #-8]
+sub X0, X0, #1
+str X0, [X19, #-8]
+"""
 }
 
 def clean_line(line):
