@@ -1,3 +1,5 @@
 STRING hello: hi there
 ARR buffer 256
-.hello 256 @buffer ? ..
+: prn .hello ;
+prn
+prn

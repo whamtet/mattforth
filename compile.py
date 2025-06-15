@@ -1,5 +1,6 @@
 import re
 from if_compiler import emit_if, emit_else, emit_then
+from func_compiler import get_assembly, add_assembly, is_recording
 
 def keep(f, s):
     return filter(lambda x: x, map(f, s))
@@ -72,6 +73,10 @@ ldr X1, [X19, #-8]!
 ldr X2, [X19, #-8]!
 svc #0
 str X1, [X19], #8
+""",
+"dup": """
+ldr X0, [X19, #-8]
+str X0, [X19], #8
 """
 }
 
@@ -100,6 +105,10 @@ def bss_array(var):
 
 
 def compile_sym(s):
+
+    already_compiled = get_assembly(s)
+    if already_compiled != None:
+        return already_compiled
 
     if len(s) > 1 and s != '..':
         for prefix, f in prefix_funcs:
@@ -132,8 +141,13 @@ with open("index.mf", "r") as file_src:
     for line_src_ in lines:
         line_src = clean_line(line_src_)
         for symbol in re.findall(r"\S+", line_src):
-            for step in compile_sym(symbol):
-                assembly.append(step)
+            if is_recording():
+                # don't add any steps
+                for step in compile_sym(symbol):
+                    add_assembly(step)
+            else:
+                for step in compile_sym(symbol):
+                    assembly.append(step)
 
     # format
     with open("h.template.s") as file_template:
