@@ -86,10 +86,13 @@ bl printf
 "?": """
 mov X8, #63
 mov X0, #0
-ldr X1, [X19, #-8]!
-ldr X2, [X19, #-8]
+ldr X1, [X19, #-8]! // buffer
+ldr X2, [X19, #-8] // count
 svc #0
 str X1, [X19, #-8]
+// append zero at the end of the string
+add X0, X0, X1
+str xzr, [X0]
 """,
 "dup": """
 ldr X0, [X19, #-8]
@@ -169,7 +172,7 @@ with open("index.mf", "r") as file_src:
 
     src = file_src.read()
     variables = re.findall(r"VARIABLE (\w+)", src)
-    arrays = re.findall(r"ARR (\w+) (\d+)", src)
+    arrays = re.findall(r"ARR (\w+): (\d+)", src)
 
     assembly = []
     lines = src.split('\n')

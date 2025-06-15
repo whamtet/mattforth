@@ -1,5 +1,3 @@
 STRING hello: hello
-: prn .hello ;
-
-prn
-prn
+ARR arr: 10
+.hello 10 @arr ? ..
