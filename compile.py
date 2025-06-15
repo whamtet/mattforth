@@ -1,9 +1,16 @@
 import re
 from if_compiler import emit_if, emit_else, emit_then
-from func_compiler import get_assembly, add_assembly, is_recording
+from func_compiler import get_commands, add_command, is_recording
 
 def keep(f, s):
     return filter(lambda x: x, map(f, s))
+
+def mapcat(f, s):
+    out = []
+    for x in s:
+        for y in f(x):
+            out.append(y)
+    return out
 
 def defstr(s):
     if s.startswith('STRING '):
@@ -58,8 +65,7 @@ str X2, [X19, #-8]
 def not_maker(s):
     return f"""
 ldr X0, [X19, #-8]
-mov X1, #0
-cmp X0, X1
+cmp X0, #0
 cset X2, {s}
 str X2, [X19, #-8]
 """
@@ -136,9 +142,9 @@ def bss_array(var):
 
 def compile_sym(s):
 
-    already_compiled = get_assembly(s)
-    if already_compiled != None:
-        return already_compiled
+    commands = get_commands(s)
+    if commands != None:
+        return mapcat(compile_sym, commands)
 
     if len(s) > 1 and s != '..':
         for prefix, f in prefix_funcs:
@@ -173,8 +179,7 @@ with open("index.mf", "r") as file_src:
         for symbol in re.findall(r"\S+", line_src):
             if is_recording():
                 # don't add any steps
-                for step in compile_sym(symbol):
-                    add_assembly(step)
+                add_command(symbol)
             else:
                 for step in compile_sym(symbol):
                     assembly.append(step)

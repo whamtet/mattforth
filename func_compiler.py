@@ -1,18 +1,18 @@
 FUNCS = {}
 
 CURR_NAME = None
-CURR_ASSEMBLY = None
+CURR_COMMANDS = None
 ACCEPTING = False
 RECORDING = False
 
-def get_assembly(sym):
-    global CURR_NAME, CURR_ASSEMBLY, ACCEPTING, RECORDING
+def get_commands(sym):
+    global CURR_NAME, CURR_COMMANDS, ACCEPTING, RECORDING
 
     if ACCEPTING:
         CURR_NAME = sym
         ACCEPTING = False
         RECORDING = True
-        CURR_ASSEMBLY = []
+        CURR_COMMANDS = []
 
         return []
 
@@ -21,16 +21,15 @@ def get_assembly(sym):
 
         return []
 
-    elif sym == ';':
-        RECORDING = False
-        FUNCS[CURR_NAME] = CURR_ASSEMBLY
-
-        return []
-
     return FUNCS.get(sym)
 
-def add_assembly(assembly):
-    CURR_ASSEMBLY.append(assembly)
+def add_command(command):
+    global RECORDING
+    if command == ';':
+        RECORDING = False
+        FUNCS[CURR_NAME] = CURR_COMMANDS
+    else:
+        CURR_COMMANDS.append(command)
 
 def is_recording():
     return RECORDING

@@ -1,2 +1,5 @@
-1 inc .
-1 dec .
+STRING hello: hello
+: prn .hello ;
+
+prn
+prn
