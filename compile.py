@@ -38,25 +38,36 @@ ldr X1, ={var}
 str X0, [X1]
 """)]
 
+def op_maker(s):
+    return f"""
+ldr X0, [X19, #-8]!
+ldr X1, [X19, #-8]!
+{s} X0, X0, X1
+str X0, [X19], #8
+"""
+
+def comp_maker(s):
+    return f"""
+ldr X0, [X19, #-8]!
+ldr X1, [X19, #-8]!
+cmp X1, X0
+cset X2, {s}
+str X2, [X19], #8
+"""
+
+def not_maker(s):
+    return f"""
+ldr X0, [X19, #-8]!
+mov X1, #0
+cmp X0, X1
+cset X2, {s}
+str X2, [X19], #8
+"""
+
 plain_args = {
-"+": """
-ldr X0, [X19, #-8]!
-ldr X1, [X19, #-8]!
-add X0, X0, X1
-str X0, [X19], #8
-""",
-"-": """
-ldr X0, [X19, #-8]!
-ldr X1, [X19, #-8]!
-sub X0, X0, X1
-str X0, [X19], #8
-""",
-"*": """
-ldr X0, [X19, #-8]!
-ldr X1, [X19, #-8]!
-mul X0, X0, X1
-str X0, [X19], #8
-""",
+"+": op_maker("add"),
+"-": op_maker("sub"),
+"*": op_maker("mul"),
 ".": """
 ldr     X0, =format
 ldr X1, [X19, #-8]!
@@ -77,7 +88,16 @@ str X1, [X19], #8
 "dup": """
 ldr X0, [X19, #-8]
 str X0, [X19], #8
-"""
+""",
+"not": not_maker("eq"),
+"pos?": not_maker("gt"),
+"neg?": not_maker("lt"),
+"<": comp_maker("lt"),
+"<=": comp_maker("le"),
+"==": comp_maker("eq"),
+">=": comp_maker("ge"),
+">": comp_maker("gt"),
+"!=": comp_maker("ne"),
 }
 
 def clean_line(line):

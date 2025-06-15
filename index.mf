@@ -1,5 +1,2 @@
-STRING hello: hi there
-ARR buffer 256
-: prn .hello ;
-prn
-prn
+0 not .
+1 not .
