@@ -71,6 +71,9 @@ def clean_line(line):
     if 'VARIABLE' in line:
         return ''
 
+    if line.startswith('ARR '):
+        return ''
+
     if line.startswith('STRING '):
         return ''
 
@@ -79,6 +82,13 @@ def clean_line(line):
 def bss(var):
     return f"""
 {var}: .skip 8
+"""
+
+def bss_array(var):
+    [name, size] = var
+    size = int(size) * 8
+    return f"""
+{name}: .skip {size}
 """
 
 
@@ -107,7 +117,13 @@ def compile_sym(s, curr_variable):
 with open("index.mf", "r") as file_src:
 
     src = file_src.read()
-    variables = set(re.findall(r"VARIABLE (\S+)", src))
+    variables = re.findall(r"VARIABLE (\w+)", src)
+    arrays = re.findall(r"ARR (\w+) (\d+)", src)
+
+    symbols = set(variables)
+    for array in arrays:
+        symbols.add(array[0])
+
     curr_variable = None
 
     assembly = []
@@ -116,7 +132,7 @@ with open("index.mf", "r") as file_src:
     for line_src_ in lines:
         line_src = clean_line(line_src_)
         for symbol in re.findall(r"\S+", line_src):
-            if symbol in variables:
+            if symbol in symbols:
                 curr_variable = symbol
             elif symbol.startswith('.') and symbol != '.':
                 assembly.append(pr_str(symbol[1:]))
@@ -129,7 +145,7 @@ with open("index.mf", "r") as file_src:
         template = file_template.read()
         strs = ''.join(keep(defstr, lines))
         text = '\n'.join(assembly)
-        bss_defs = ''.join(map(bss, variables))
+        bss_defs = ''.join(map(bss, variables)) + ''.join(map(bss_array, arrays))
 
         out = template.format(strs, text, bss_defs)
 

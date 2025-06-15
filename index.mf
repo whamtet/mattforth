@@ -1,10 +1,1 @@
-STRING hi: hi
-STRING there: there
-
-1 IF
-  0 IF
-    .hi
-  ELSE
-    .there
-  THEN
-THEN
+ARR hi 10
