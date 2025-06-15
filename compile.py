@@ -88,8 +88,9 @@ mov X8, #63
 mov X0, #0
 ldr X1, [X19, #-8]! // buffer
 ldr X2, [X19, #-8] // count
-svc #0
+// put the buffer back on the stack
 str X1, [X19, #-8]
+svc #0
 // append zero at the end of the string
 add X0, X0, X1
 str xzr, [X0]
@@ -116,6 +117,12 @@ str X0, [X19, #-8]
 ldr X0, [X19, #-8]
 sub X0, X0, #1
 str X0, [X19, #-8]
+""",
+"=str": """
+ldr X0, [X19, #-8]!
+ldr X1, [X19, #-8]
+bl strcmp
+str X0, [X19, #-8]
 """
 }
 
@@ -129,7 +136,7 @@ def clean_line(line):
     if line.startswith('STRING '):
         return ''
 
-    return line.split('\\')[0]
+    return line.split('//')[0]
 
 def bss(var):
     return f"""

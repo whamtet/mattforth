@@ -1,3 +1,6 @@
 STRING hello: hello
 ARR arr: 10
-.hello 10 @arr ? ..
+ARR arr2: 10
+.hello 10 @arr ?
+.hello 10 @arr2 ?
+=str .
