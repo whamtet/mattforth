@@ -11,35 +11,31 @@ def defstr(s):
 {a}: .asciz "{b}\\n"
 """
 
-def pr_str(s):
-    return f"""
-ldr X0, ={s}
-bl printf
-"""
-
 def push_stack(value):
     return f"""
 mov X3, #{value}
 str X3, [X19], #8
 """
 
-def store(var):
-    return f"""
-
-"""
-
-func_args = {
-"!": lambda var: f"""
-ldr X0, [X19, #-8]!
-ldr X1, ={var}
-str X0, [X1]
-""",
-"@": lambda var: f"""
+prefix_funcs = [
+(".", lambda s: f"""
+ldr X0, ={s}
+bl printf
+"""), 
+("@@", lambda var: f"""
 ldr X1, ={var}
 ldr X0, [X1]
 str X0, [X19], #8
-"""
-}
+"""), 
+("@", lambda var: f"""
+ldr X0, ={var}
+str X0, [X19], #8
+"""),
+("!", lambda var: f"""
+ldr X0, [X19, #-8]!
+ldr X1, ={var}
+str X0, [X1]
+""")]
 
 plain_args = {
 "+": """
@@ -64,6 +60,18 @@ str X0, [X19], #8
 ldr     X0, =format
 ldr X1, [X19, #-8]!
 bl      printf
+""",
+"..": """
+ldr X0, [X19, #-8]!
+bl printf
+""",
+"?": """
+mov X8, #63
+mov X0, #0
+ldr X1, [X19, #-8]!
+ldr X2, [X19, #-8]!
+svc #0
+str X1, [X19], #8
 """
 }
 
@@ -86,16 +94,18 @@ def bss(var):
 
 def bss_array(var):
     [name, size] = var
-    size = int(size) * 8
     return f"""
 {name}: .skip {size}
 """
 
 
-def compile_sym(s, curr_variable):
+def compile_sym(s):
 
-    if symbol.startswith('.') and symbol != '.':
-        return [pr_str(symbol[1:])]
+    if len(s) > 1 and s != '..':
+        for prefix, f in prefix_funcs:
+            if s.startswith(prefix):
+                t = s[len(prefix):]
+                return [f(t)]
 
     if symbol == 'IF':
         return [emit_if()]
@@ -106,11 +116,7 @@ def compile_sym(s, curr_variable):
 
     asm = plain_args.get(s)
     if asm:
-        return [asm] 
-
-    f = func_args.get(s)
-    if f:
-        return [f(curr_variable)]
+        return [asm]
 
     return [push_stack(s)]
 
@@ -120,25 +126,14 @@ with open("index.mf", "r") as file_src:
     variables = re.findall(r"VARIABLE (\w+)", src)
     arrays = re.findall(r"ARR (\w+) (\d+)", src)
 
-    symbols = set(variables)
-    for array in arrays:
-        symbols.add(array[0])
-
-    curr_variable = None
-
     assembly = []
     lines = src.split('\n')
 
     for line_src_ in lines:
         line_src = clean_line(line_src_)
         for symbol in re.findall(r"\S+", line_src):
-            if symbol in symbols:
-                curr_variable = symbol
-            elif symbol.startswith('.') and symbol != '.':
-                assembly.append(pr_str(symbol[1:]))
-            else:
-                for step in compile_sym(symbol, curr_variable):
-                    assembly.append(step)
+            for step in compile_sym(symbol):
+                assembly.append(step)
 
     # format
     with open("h.template.s") as file_template:
