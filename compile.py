@@ -1,6 +1,8 @@
 import re
 from if_compiler import emit_if, emit_else, emit_then
 from func_compiler import get_commands, add_command, is_recording
+from loop_compiler import emit_loop, emit_loop_end
+from str_compiler import emit_hash
 
 def keep(f, s):
     return filter(lambda x: x, map(f, s))
@@ -70,6 +72,14 @@ cset X2, {s}
 str X2, [X19, #-8]
 """
 
+def print_maker(i):
+    r = 'X' + str(20 + i * 2)
+    return f"""
+ldr X0, =format
+mov X1, {r}
+bl printf
+"""
+
 plain_args = {
 "+": op_maker("add"),
 "-": op_maker("sub"),
@@ -79,10 +89,14 @@ ldr     X0, =format
 ldr X1, [X19, #-8]!
 bl      printf
 """,
+".i": print_maker(0),
+".j": print_maker(1),
+".k": print_maker(2),
 "..": """
 ldr X0, [X19, #-8]!
 bl printf
 """,
+# usage: 10 @x ?
 "?": """
 mov X8, #63
 mov X0, #0
@@ -149,6 +163,7 @@ def bss_array(var):
 {name}: .skip {size}
 """
 
+skip_prefix = set(['..', '.i', '.j', '.k'])
 
 def compile_sym(s):
 
@@ -156,7 +171,7 @@ def compile_sym(s):
     if commands != None:
         return mapcat(compile_sym, commands)
 
-    if len(s) > 1 and s != '..':
+    if len(s) > 1 and s not in skip_prefix:
         for prefix, f in prefix_funcs:
             if s.startswith(prefix):
                 t = s[len(prefix):]
@@ -168,6 +183,23 @@ def compile_sym(s):
         return [emit_else()]
     if symbol == 'THEN':
         return [emit_then()]
+
+    if symbol == 'LOOP':
+        return [emit_loop(0)]
+    if symbol == 'LOOP2':
+        return [emit_loop(1)]
+    if symbol == 'LOOP3':
+        return [emit_loop(2)]
+
+    if symbol == 'LOOPEND':
+        return [emit_loop_end(0)]
+    if symbol == 'LOOPEND2':
+        return [emit_loop_end(1)]
+    if symbol == 'LOOPEND3':
+        return [emit_loop_end(2)]
+
+    if symbol == 'hash':
+        return [emit_hash()]
 
     asm = plain_args.get(s)
     if asm:
