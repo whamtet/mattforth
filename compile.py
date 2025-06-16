@@ -150,6 +150,9 @@ def clean_line(line):
     if line.startswith('STRING '):
         return ''
 
+    if line.startswith('CONST '):
+        return ''
+
     return line.split('//')[0]
 
 def bss(var):
@@ -165,11 +168,11 @@ def bss_array(var):
 
 skip_prefix = set(['..', '.i', '.j', '.k'])
 
-def compile_sym(s):
+def compile_sym(s, constants):
 
     commands = get_commands(s)
     if commands != None:
-        return mapcat(compile_sym, commands)
+        return mapcat(lambda x: compile_sym(x, constants), commands)
 
     if len(s) > 1 and s not in skip_prefix:
         for prefix, f in prefix_funcs:
@@ -205,13 +208,16 @@ def compile_sym(s):
     if asm:
         return [asm]
 
-    return [push_stack(s)]
+    v = constants.get(s)
+
+    return [push_stack(v or s)]
 
 with open("index.mf", "r") as file_src:
 
     src = file_src.read()
     variables = re.findall(r"VARIABLE (\w+)", src)
     arrays = re.findall(r"ARR (\w+): (\d+)", src)
+    constants = dict(re.findall(r"CONST (\w+): (\d+)", src))
 
     assembly = []
     lines = src.split('\n')
@@ -223,7 +229,7 @@ with open("index.mf", "r") as file_src:
                 # don't add any steps
                 add_command(symbol)
             else:
-                for step in compile_sym(symbol):
+                for step in compile_sym(symbol, constants):
                     assembly.append(step)
 
     # format

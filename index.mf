@@ -1,3 +1,4 @@
 STRING hello: hello
 ARR x: 10
-.hello 10 @x ? hash .
+CONST Y: 10
+Y

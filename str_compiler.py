@@ -15,7 +15,6 @@ def emit_hash():
     return f"""
 ldr X0, [X19, #-8] // going to put it back
 mov X1, #0
-mov X2, #0
 mov X3, #5381
 hash{COUNTER}:
 ldrb W2, [X0, X1]
