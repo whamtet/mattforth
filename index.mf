@@ -1,1 +1,5 @@
-alloc .
+STRING k: key
+STRING v: val
+ARR my_map: 4096
+
+@my_map @k @v assoc

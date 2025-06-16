@@ -2,16 +2,8 @@ import re
 from if_compiler import emit_if, emit_else, emit_then
 from func_compiler import get_commands, add_command, is_recording
 from loop_compiler import emit_loop, emit_loop_end
-
-def keep(f, s):
-    return filter(lambda x: x, map(f, s))
-
-def mapcat(f, s):
-    out = []
-    for x in s:
-        for y in f(x):
-            out.append(y)
-    return out
+from str_compiler import emit_assoc
+from util import mapcat, keep
 
 def defstr(s):
     if s.startswith('STRING '):
@@ -83,6 +75,7 @@ plain_args = {
 "+": op_maker("add"),
 "-": op_maker("sub"),
 "*": op_maker("mul"),
+"&": op_maker("and"),
 ".": """
 ldr     X0, =format
 ldr X1, [X19, #-8]!
@@ -213,6 +206,9 @@ def compile_sym(s, constants):
         return [emit_loop_end(0)]
     if symbol == 'LOOPEND2':
         return [emit_loop_end(1)]
+
+    if symbol == 'assoc':
+        return [emit_assoc()]
 
     asm = plain_args.get(s)
     if asm:
