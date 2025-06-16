@@ -172,6 +172,7 @@ def bss(var):
 
 def bss_array(var):
     [name, size] = var
+    size = int(size) * 8
     return f"""
 {name}: .skip {size}
 """

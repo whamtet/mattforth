@@ -14,6 +14,7 @@ mov X1, X25
 bl strcmp
 cmp X0, #0 // if we've matched the key
 b.eq bucket_end{COUNTER} // also found our spot
+
 add X26, X26, #16 // try the next spot
 """
 
@@ -59,7 +60,7 @@ add X1, X1, #1
 b hash{COUNTER}
 hash_end{COUNTER}:
 and X3, X3, #0xFF // get lowest byte
-lsl X3, X3, #4 // 8 slots and two
+lsl X3, X3, #7 // 8 slots and two + 3 bytes
 
 ldr X26, [X19, #-24] // address of array
 add X26, X26, X3 // check here
@@ -103,7 +104,7 @@ add X1, X1, #1
 b hash{COUNTER}
 hash_end{COUNTER}:
 and X3, X3, #0xFF // get lowest byte
-lsl X3, X3, #4 // 8 slots and two
+lsl X3, X3, #7 // 8 slots and two + 3 bytes
 
 ldr X26, [X19, #-16] // address of array
 add X26, X26, X3 // check here
