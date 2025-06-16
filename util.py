@@ -13,3 +13,9 @@ def repeat(n, x):
 
 def repeat_lines(n, x):
     return '\n'.join(repeat(n, x))
+
+def repeatedly(n, f):
+    return map(f, range(n))
+
+def repeatedly_lines(n, f):
+    return '\n'.join(repeatedly(n, f))

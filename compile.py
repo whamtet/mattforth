@@ -2,7 +2,7 @@ import re
 from if_compiler import emit_if, emit_else, emit_then
 from func_compiler import get_commands, add_command, is_recording
 from loop_compiler import emit_loop, emit_loop_end
-from str_compiler import emit_assoc
+from map_compiler import emit_assoc, emit_get
 from util import mapcat, keep
 
 def defstr(s):
@@ -209,6 +209,8 @@ def compile_sym(s, constants):
 
     if symbol == 'assoc':
         return [emit_assoc()]
+    if symbol == 'get':
+        return [emit_get()]
 
     asm = plain_args.get(s)
     if asm:

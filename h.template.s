@@ -1,5 +1,6 @@
 .section .data
-format:     .asciz "%d\n"
+format:     .asciz "%ld\n"
+
 {}
 
 .section .text
