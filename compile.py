@@ -2,7 +2,6 @@ import re
 from if_compiler import emit_if, emit_else, emit_then
 from func_compiler import get_commands, add_command, is_recording
 from loop_compiler import emit_loop, emit_loop_end
-from str_compiler import emit_hash
 
 def keep(f, s):
     return filter(lambda x: x, map(f, s))
@@ -73,7 +72,7 @@ str X2, [X19, #-8]
 """
 
 def print_maker(i):
-    r = 'X' + str(20 + i * 2)
+    r = 'X' + str(21 + i * 2)
     return f"""
 ldr X0, =format
 mov X1, {r}
@@ -91,7 +90,6 @@ bl      printf
 """,
 ".i": print_maker(0),
 ".j": print_maker(1),
-".k": print_maker(2),
 "..": """
 ldr X0, [X19, #-8]!
 bl printf
@@ -137,6 +135,25 @@ ldr X0, [X19, #-8]!
 ldr X1, [X19, #-8]
 bl strcmp
 str X0, [X19, #-8]
+""",
+"alloc-sm": """
+str X20, [X19], #8
+add X20, X20, #128
+""",
+"alloc-md": """
+str X20, [X19], #8
+add X20, X20, #4096
+""",
+"alloc": """
+    mov x0, #0                  // addr = NULL (let kernel choose)
+    mov x1, #1048576            // length = 1 MiB
+    mov x2, #3                  // prot = PROT_READ | PROT_WRITE (1|2 = 3)
+    mov x3, #0x22               // flags = MAP_PRIVATE | MAP_ANONYMOUS (2|0x20 = 0x22)
+    mov x4, #-1                 // fd = -1 (no file)
+    mov x5, #0                  // offset = 0
+    mov x8, #222                 // syscall number: mmap
+    svc #0                       // make syscall
+    str X0, [X19], #8 // address of region
 """
 }
 
@@ -191,18 +208,11 @@ def compile_sym(s, constants):
         return [emit_loop(0)]
     if symbol == 'LOOP2':
         return [emit_loop(1)]
-    if symbol == 'LOOP3':
-        return [emit_loop(2)]
 
     if symbol == 'LOOPEND':
         return [emit_loop_end(0)]
     if symbol == 'LOOPEND2':
         return [emit_loop_end(1)]
-    if symbol == 'LOOPEND3':
-        return [emit_loop_end(2)]
-
-    if symbol == 'hash':
-        return [emit_hash()]
 
     asm = plain_args.get(s)
     if asm:

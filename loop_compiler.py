@@ -7,8 +7,8 @@ def emit_loop(offset):
         LOOP_COUNTER += 3
 
     counter = LOOP_COUNTER + offset
-    r1 = 'X' + str(20 + offset * 2)
-    r2 = 'X' + str(20 + offset * 2 + 1)
+    r1 = 'X' + str(21 + offset * 2)
+    r2 = 'X' + str(21 + offset * 2 + 1)
 
     return f"""
 ldr {r2}, [X19, #-8]!
@@ -22,8 +22,8 @@ loop{counter}:
 def emit_loop_end(offset):
 
     counter = LOOP_COUNTER + offset
-    r1 = 'X' + str(20 + offset * 2)
-    r2 = 'X' + str(20 + offset * 2 + 1)
+    r1 = 'X' + str(21 + offset * 2)
+    r2 = 'X' + str(21 + offset * 2 + 1)
 
     return f"""
 add {r1}, {r1}, #1

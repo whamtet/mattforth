@@ -7,3 +7,7 @@
 X0 = exit code
 X8 = svc code
 X19 = stack pointer
+X20 = mini allocator
+
+callee saved
+x19–x28

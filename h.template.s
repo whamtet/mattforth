@@ -8,6 +8,7 @@ format:     .asciz "%d\n"
 main:
 
 ldr X19, =stack
+ldr X20, =block
 
 {}
 
@@ -18,4 +19,6 @@ svc 0
 .bss
     .align 3
 stack: .skip 1048576
+block: .skip 1048576
+
 {}

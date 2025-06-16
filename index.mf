@@ -1,4 +1,1 @@
-STRING hello: hello
-ARR x: 10
-CONST Y: 10
-Y
+alloc .

@@ -13,7 +13,7 @@ def emit_hash():
 # X4 left shifted
 
     return f"""
-ldr X0, [X19, #-8] // going to put it back
+ldr X0, [X19, #-16] // going to put it back
 mov X1, #0
 mov X3, #5381
 hash{COUNTER}:
@@ -27,5 +27,9 @@ add W3, W3, W2
 add X1, X1, #1
 b hash{COUNTER}
 hash_end{COUNTER}:
-str X3, [X19, #-8]
+and X3, X3, #0xFF // get lowest byte
+lsl X3, X3, #4 // 8 slots and two
+ldr X25, [X19, #-24] // address of array
+add X25, X25, X3 // check here
+// now we can hardcode the equality check
 """
