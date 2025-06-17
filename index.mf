@@ -1,5 +1,3 @@
 STRING hello: hello
-STRING xx: 110
-// .hello 10 10 alloc-sm ? parse .
 
-@xx parse .
+.hello 10 10 alloc-sm ? trim-end getenv .s

@@ -3,7 +3,7 @@ from if_compiler import emit_if, emit_else, emit_then
 from func_compiler import get_commands, add_command, is_recording
 from loop_compiler import emit_loop, emit_loop_end
 from map_compiler import emit_assoc, emit_get
-from parser_compiler import emit_parser
+from parser_compiler import emit_parser, emit_trim_end
 from util import mapcat, keep
 
 def defstr(s):
@@ -89,6 +89,11 @@ ldr     X0, =format
 ldr X1, [X19, #-8]!
 bl      printf
 """,
+".s": """
+ldr X0, =format_str
+ldr X1, [X19, #-8]!
+bl printf
+""",
 ".i": print_maker(0),
 ".j": print_maker(1),
 "..": """
@@ -158,6 +163,13 @@ add X20, X20, X0
 ldr X0, [X19, #-8]
 bl getenv
 str X0, [X19, #-8]
+""",
+"pop": """
+sub, X19, X19, #8
+""",
+"dup": """
+ldr X0, [X19, #-8]
+str X0, [X19], #8
 """
 }
 
@@ -191,9 +203,12 @@ def bss_array(var):
 {name}: .skip {size}
 """
 
-skip_prefix = set(['..', '.i', '.j', '.k'])
+skip_prefix = set(['..', '.i', '.j', '.k', '.s'])
 
 def compile_sym(s, constants):
+
+    if s.startswith('#_'):
+        return [] # comment
 
     commands = get_commands(s)
     if commands != None:
@@ -229,6 +244,8 @@ def compile_sym(s, constants):
 
     if symbol == 'parse':
         return [emit_parser()]
+    if symbol == 'trim-end':
+        return [emit_trim_end()]
 
     asm = plain_args.get(s)
     if asm:

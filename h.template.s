@@ -1,5 +1,6 @@
 .section .data
 format:     .asciz "%ld\n"
+format_str:  .asciz "%s\n"
 
 {}
 

@@ -29,3 +29,22 @@ b parse{COUNTER}
 parse_end{COUNTER}:
 str X3, [X19, #-8]
 """
+
+# we'll just turn 10 into 0
+def emit_trim_end():
+    global COUNTER
+    COUNTER += 1
+
+    return f"""
+ldr X0, [X19, #-8] // no need to pop
+mov X1, #-1
+trim{COUNTER}:
+add X1, X1, #1
+ldrb W2, [X0, X1]
+cmp W2, #0
+b.eq trim_end{COUNTER}
+cmp W2, #10
+b.ne trim{COUNTER}
+strb WZR, [X0, X1]
+trim_end{COUNTER}:
+"""
