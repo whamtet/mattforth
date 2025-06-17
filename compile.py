@@ -142,13 +142,13 @@ ldr X1, [X19, #-8]
 bl strcmp
 str X0, [X19, #-8]
 """,
-"alloc-sm": """
+"alloc": """
 ldr X0, [X19, #-8]
 lsl X0, X0, #3
 str X20, [X19, #-8]
 add X20, X20, X0
 """,
-"alloc": """
+"alloc-lg": """
     mov x0, #0                  // addr = NULL (let kernel choose)
     mov x1, #1048576            // length = 1 MiB
     mov x2, #3                  // prot = PROT_READ | PROT_WRITE (1|2 = 3)
@@ -170,6 +170,37 @@ sub, X19, X19, #8
 "dup": """
 ldr X0, [X19, #-8]
 str X0, [X19], #8
+""",
+"strlen": """
+ldr X0, [X19, #-8]
+bl strlen
+str X0, [X19], #8
+""",
+"cat": """
+mov X25, X20 // temp storage
+mov X0, X20 // dest
+ldr X1, [X19, #-16]
+bl strcpy
+// need length of copied string
+mov X0, X20
+bl strlen
+add X20, X20, X0 // advance to end of next str
+mov X0, X20 // dest of second part
+ldr X1, [X19, #-8]!
+bl strcpy
+mov X0, X20
+bl strlen
+add X20, X20, X0 // advance again
+str X25, [X19, #-8] // put new string at the end of the stack!
+""",
+"drop": """
+sub, X19, X19, #8
+""",
+"swap": """
+ldr X0, [X19, #-8]!
+ldr X1, [X19, #-8]
+str X0, [X19, #-8]
+str X1, [X19], #8
 """
 }
 

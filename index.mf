@@ -1,3 +1,4 @@
 STRING hello: hello
-
-.hello 10 10 alloc-sm ? trim-end getenv .s
+.hello 10 10 alloc ? trim-end
+.hello 10 10 alloc ?
+cat ..
