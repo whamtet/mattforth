@@ -3,6 +3,7 @@ from if_compiler import emit_if, emit_else, emit_then
 from func_compiler import get_commands, add_command, is_recording
 from loop_compiler import emit_loop, emit_loop_end
 from map_compiler import emit_assoc, emit_get
+from parser_compiler import emit_parser
 from util import mapcat, keep
 
 def defstr(s):
@@ -10,6 +11,13 @@ def defstr(s):
         [a, b] = s[7:].split(': ')
         return f"""
 {a}: .asciz "{b}\\n"
+"""
+
+def defstr0(s):
+    if s.startswith('STRING0 '):
+        [a, b] = s[8:].split(': ')
+        return f"""
+{a}: .asciz "{b}"
 """
 
 def push_stack(value):
@@ -130,12 +138,10 @@ bl strcmp
 str X0, [X19, #-8]
 """,
 "alloc-sm": """
-str X20, [X19], #8
-add X20, X20, #128
-""",
-"alloc-md": """
-str X20, [X19], #8
-add X20, X20, #4096
+ldr X0, [X19, #-8]
+lsl X0, X0, #3
+str X20, [X19, #-8]
+add X20, X20, X0
 """,
 "alloc": """
     mov x0, #0                  // addr = NULL (let kernel choose)
@@ -147,6 +153,11 @@ add X20, X20, #4096
     mov x8, #222                 // syscall number: mmap
     svc #0                       // make syscall
     str X0, [X19], #8 // address of region
+""",
+"getenv": """
+ldr X0, [X19, #-8]
+bl getenv
+str X0, [X19, #-8]
 """
 }
 
@@ -158,6 +169,9 @@ def clean_line(line):
         return ''
 
     if line.startswith('STRING '):
+        return ''
+
+    if line.startswith('STRING0 '):
         return ''
 
     if line.startswith('CONST '):
@@ -213,6 +227,9 @@ def compile_sym(s, constants):
     if symbol == 'get':
         return [emit_get()]
 
+    if symbol == 'parse':
+        return [emit_parser()]
+
     asm = plain_args.get(s)
     if asm:
         return [asm]
@@ -244,7 +261,7 @@ with open("index.mf", "r") as file_src:
     # format
     with open("h.template.s") as file_template:
         template = file_template.read()
-        strs = ''.join(keep(defstr, lines))
+        strs = ''.join(keep(defstr, lines)) + ''.join(keep(defstr0, lines))
         text = '\n'.join(assembly)
         bss_defs = ''.join(map(bss, variables)) + ''.join(map(bss_array, arrays))
 

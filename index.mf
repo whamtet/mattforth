@@ -1,12 +1,5 @@
-STRING k: key
-STRING v: val
-STRING k2: key2
-STRING v2: val2
-ARR my_map: 4096
+STRING hello: hello
+STRING xx: 110
+// .hello 10 10 alloc-sm ? parse .
 
-@my_map @k @v assoc
-@k2 @v2 assoc
-// try getting it back!
-@k get ..
-@k get ..
-@k2 get ..
+@xx parse .
