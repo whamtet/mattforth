@@ -94,6 +94,12 @@ ldr X0, =format_str
 ldr X1, [X19, #-8]!
 bl printf
 """,
+".s2_": """
+ldr X0, =format2
+ldr X2, [X19, #-8]!
+ldr X1, [X19, #-8]!
+bl printf
+""",
 ".i": print_maker(0),
 ".j": print_maker(1),
 "..": """
@@ -234,22 +240,14 @@ def bss_array(var):
 {name}: .skip {size}
 """
 
-skip_prefix = set(['..', '.i', '.j', '.k', '.s'])
+def compile_sym(symbol, constants):
 
-def compile_sym(s, constants):
-
-    if s.startswith('#_'):
+    if symbol.startswith('#_'):
         return [] # comment
 
-    commands = get_commands(s)
+    commands = get_commands(symbol)
     if commands != None:
         return mapcat(lambda x: compile_sym(x, constants), commands)
-
-    if len(s) > 1 and s not in skip_prefix:
-        for prefix, f in prefix_funcs:
-            if s.startswith(prefix):
-                t = s[len(prefix):]
-                return [f(t)]
 
     if symbol == 'IF':
         return [emit_if()]
@@ -278,9 +276,18 @@ def compile_sym(s, constants):
     if symbol == 'trim-end':
         return [emit_trim_end()]
 
-    asm = plain_args.get(s)
+    if symbol == '.s2':
+        commands = ["trim-end", "swap", "trim-end", "swap", ".s2_"]
+        return mapcat(lambda x: compile_sym(x, constants), commands)
+
+    asm = plain_args.get(symbol)
     if asm:
         return [asm]
+
+    for prefix, f in prefix_funcs:
+        if symbol.startswith(prefix):
+            t = symbol[len(prefix):]
+            return [f(t)]
 
     v = constants.get(s)
 

@@ -1,6 +1,7 @@
 .section .data
-format:     .asciz "%ld\n"
+format:      .asciz "%ld\n"
 format_str:  .asciz "%s\n"
+format2:     .asciz "%s: %s\n"
 
 {}
 

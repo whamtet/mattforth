@@ -1,4 +1,4 @@
-STRING hello: hello
-.hello 10 10 alloc ? trim-end
-.hello 10 10 alloc ?
-cat ..
+STRING a: a
+STRING b: b
+
+@a @b .s2
