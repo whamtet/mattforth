@@ -55,7 +55,7 @@ b.eq hash_end{COUNTER} // we have finished calculating the hash
 // body of the loop
 lsl X4, X3, #5
 add X3, X3, X4
-add W3, W3, W2
+add X3, X3, X2
 add X1, X1, #1
 b hash{COUNTER}
 hash_end{COUNTER}:
@@ -99,7 +99,7 @@ b.eq hash_end{COUNTER} // we have finished calculating the hash
 // body of the loop
 lsl X4, X3, #5
 add X3, X3, X4
-add W3, W3, W2
+add X3, X3, X2
 add X1, X1, #1
 b hash{COUNTER}
 hash_end{COUNTER}:
@@ -119,7 +119,7 @@ str xzr, [X19, #-8]
 b bucket_end{COUNTER}
 
 bucket_success{COUNTER}:
-ldr X0, [X26, #8] // v
+ldr X0, [X26, #8] // v (+ 8)
 str X0, [X19, #-8]
 bucket_end{COUNTER}:
 """

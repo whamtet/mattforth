@@ -11,7 +11,7 @@ def emit_if():
 
     push_if()
     label = IF_COUNTER
-    IF_COUNTER += 1
+    IF_COUNTER += 1 # for next time
 
     return f"""
 ldr X0, [X19, #-8]!
