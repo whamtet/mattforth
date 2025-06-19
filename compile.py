@@ -156,7 +156,7 @@ add X20, X20, X0
 """,
 "alloc-lg": """
     mov x0, #0                  // addr = NULL (let kernel choose)
-    mov x1, #1048576            // length = 1 MiB
+    mov x1, [X19, #-8]!         // length = 1 MiB
     mov x2, #3                  // prot = PROT_READ | PROT_WRITE (1|2 = 3)
     mov x3, #0x22               // flags = MAP_PRIVATE | MAP_ANONYMOUS (2|0x20 = 0x22)
     mov x4, #-1                 // fd = -1 (no file)
