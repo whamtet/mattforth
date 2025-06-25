@@ -4,21 +4,8 @@ from func_compiler import get_commands, add_command, is_recording
 from loop_compiler import emit_loop, emit_loop_end
 from map_compiler import emit_assoc, emit_get
 from parser_compiler import emit_parser, emit_trim_end
-from util import mapcat, keep
-
-def defstr(s):
-    if s.startswith('STRING '):
-        [a, b] = s[7:].split(': ')
-        return f"""
-{a}: .asciz "{b}\\n"
-"""
-
-def defstr0(s):
-    if s.startswith('STRING0 '):
-        [a, b] = s[8:].split(': ')
-        return f"""
-{a}: .asciz "{b}"
-"""
+from util import mapcat, keep, split2
+from def_strs import defstr, defstr0, defprint
 
 def push_stack(value):
     return f"""
@@ -29,7 +16,7 @@ str X3, [X19], #8
 prefix_funcs = [
 (".", lambda s: f"""
 ldr X0, ={s}
-bl printf
+bl puts
 """), 
 ("@@", lambda var: f"""
 ldr X1, ={var}
@@ -289,13 +276,13 @@ def compile_sym(symbol, constants):
             t = symbol[len(prefix):]
             return [f(t)]
 
-    v = constants.get(s)
+    v = constants.get(symbol)
 
-    return [push_stack(v or s)]
+    return [push_stack(v or symbol)]
 
-with open("index.mf", "r") as file_src:
+def compile_src(srcs, pr_vars):
 
-    src = file_src.read()
+    src = '\n'.join(srcs)
     variables = re.findall(r"VARIABLE (\w+)", src)
     arrays = re.findall(r"ARR (\w+): (\d+)", src)
     constants = dict(re.findall(r"CONST (\w+): (\d+)", src))
@@ -316,7 +303,7 @@ with open("index.mf", "r") as file_src:
     # format
     with open("h.template.s") as file_template:
         template = file_template.read()
-        strs = ''.join(keep(defstr, lines)) + ''.join(keep(defstr0, lines))
+        strs = ''.join(keep(defstr, lines)) + ''.join(keep(defstr0, lines)) + ''.join(pr_vars)
         text = '\n'.join(assembly)
         bss_defs = ''.join(map(bss, variables)) + ''.join(map(bss_array, arrays))
 
@@ -324,3 +311,28 @@ with open("index.mf", "r") as file_src:
 
         with open("h.s", "w") as file_out:
             file_out.write(out)
+
+with open("index.php", "r") as file_src:
+
+    src = file_src.read()
+    srcs = []
+    pr_vars = []
+
+    while True:
+        a, b = split2(src, '<?')
+        a = a.strip()
+        if a:
+            pr_var, pr_command = defprint(a)
+            pr_vars.append(pr_var)
+
+            src = pr_command + (b or '')
+        else:
+            break
+
+        a, src = split2(src, '?>')
+        srcs.append(a)
+
+        if not src:
+            break
+
+    compile_src(srcs, pr_vars)

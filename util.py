@@ -19,3 +19,22 @@ def repeatedly(n, f):
 
 def repeatedly_lines(n, f):
     return '\n'.join(repeatedly(n, f))
+
+def maplast(f, s):
+    out = []
+    i = 0
+    for x in s:
+        i += 1
+        out.append(f(i == len(s), x))
+
+    return out
+
+def maplast_lines(f, s):
+    return '\n'.join(maplast(f, s))
+
+def split2(a, b):
+    x = a.split(b, 1)
+    if len(x) == 1:
+        return x[0], None
+    else:
+        return x[0], x[1]

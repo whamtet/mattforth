@@ -1,4 +1,0 @@
-STRING a: a
-STRING b: b
-
-@a @b .s2
