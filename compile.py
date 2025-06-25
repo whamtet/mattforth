@@ -318,7 +318,7 @@ with open("index.php", "r") as file_src:
     srcs = []
     pr_vars = []
 
-    while True:
+    while src:
         a, b = split2(src, '<?')
         a = a.strip()
         if a:
@@ -331,8 +331,5 @@ with open("index.php", "r") as file_src:
 
         a, src = split2(src, '?>')
         srcs.append(a)
-
-        if not src:
-            break
 
     compile_src(srcs, pr_vars)
